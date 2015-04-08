@@ -26,6 +26,8 @@ class PlaySoundsViewController: UIViewController {
     /*----viewcontroller overrides-------------------*/
     override func viewDidLoad() {
         super.viewDidLoad()
+        var session = AVAudioSession.sharedInstance()
+        session.setCategory(AVAudioSessionCategoryPlayback, error: nil)
         auEngine = AVAudioEngine()
         player = AVAudioPlayer(contentsOfURL: lastRecordedAudio.filePathUrl, error: nil)
         lastRecordedAFile = AVAudioFile(forReading: lastRecordedAudio.filePathUrl, error: nil)
