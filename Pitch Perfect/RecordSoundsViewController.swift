@@ -60,14 +60,14 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
             isRecordingLabel.textColor =  recordingStatusLabelDfltColor
         }else{
             //set up for record
-            let docPath = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] as String
+            let docPath = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] as! String
             let curDateTime = NSDate()
             let formatter = NSDateFormatter()
             formatter.dateFormat = "ddMMyyyy-HHmmss"
             let recordingName = formatter.stringFromDate(curDateTime) + ".wav"
             let pathArray = [docPath,recordingName]
             let filePath = NSURL.fileURLWithPathComponents(pathArray)
-            println(filePath?)
+            println(filePath)
             
             var session = AVAudioSession.sharedInstance()
             session.setCategory(AVAudioSessionCategoryPlayAndRecord, error: nil)
@@ -122,8 +122,8 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "stopRecording" {
-            let targetVC:PlaySoundsViewController = segue.destinationViewController as PlaySoundsViewController
-            let data = sender as RecordedAudio
+            let targetVC:PlaySoundsViewController = segue.destinationViewController as! PlaySoundsViewController
+            let data = sender as! RecordedAudio
             targetVC.lastRecordedAudio = data
         }
     }
