@@ -26,11 +26,14 @@ class PlaySoundsViewController: UIViewController {
     /*----viewcontroller overrides-------------------*/
     override func viewDidLoad() {
         super.viewDidLoad()
-        var session = AVAudioSession.sharedInstance()
-        session.setCategory(AVAudioSessionCategoryPlayback, error: nil)
+        let session = AVAudioSession.sharedInstance()
+        do {
+            try session.setCategory(AVAudioSessionCategoryPlayback)
+        } catch _ {
+        }
         auEngine = AVAudioEngine()
-        player = AVAudioPlayer(contentsOfURL: lastRecordedAudio.filePathUrl, error: nil)
-        lastRecordedAFile = AVAudioFile(forReading: lastRecordedAudio.filePathUrl, error: nil)
+        player = try? AVAudioPlayer(contentsOfURL: lastRecordedAudio.filePathUrl)
+        lastRecordedAFile = try? AVAudioFile(forReading: lastRecordedAudio.filePathUrl)
     }
 
     override func didReceiveMemoryWarning() {
@@ -74,23 +77,23 @@ class PlaySoundsViewController: UIViewController {
         auEngine.stop()
         auEngine.reset()
         
-        var auPlayerNode = AVAudioPlayerNode()
+        let auPlayerNode = AVAudioPlayerNode()
         auEngine.attachNode(auPlayerNode)
         
-        var changePitchEffect = AVAudioUnitTimePitch()
+        let changePitchEffect = AVAudioUnitTimePitch()
         changePitchEffect.pitch = pitch
         changePitchEffect.rate = rate
         auEngine.attachNode(changePitchEffect)
         auEngine.connect(auPlayerNode, to: changePitchEffect, format: nil)
         if effectsToggle.selectedSegmentIndex == EFFECT_REVERB{
-            var reverb = AVAudioUnitReverb()
+            let reverb = AVAudioUnitReverb()
             reverb.loadFactoryPreset(.Cathedral)
             reverb.wetDryMix = 20
             auEngine.attachNode(reverb)
             auEngine.connect(changePitchEffect, to: reverb, format: nil)
             auEngine.connect(reverb, to: auEngine.outputNode, format: nil)
         }else if effectsToggle.selectedSegmentIndex == EFFECT_DISTORTION{
-            var distortion = AVAudioUnitDistortion()
+            let distortion = AVAudioUnitDistortion()
             distortion.loadFactoryPreset(.SpeechGoldenPi)
             distortion.wetDryMix = 50
             auEngine.attachNode(distortion)
@@ -99,9 +102,11 @@ class PlaySoundsViewController: UIViewController {
         }else{
             auEngine.connect(changePitchEffect, to: auEngine.outputNode, format: nil)
         }
-        
         auPlayerNode.scheduleFile(lastRecordedAFile, atTime: nil, completionHandler: nil)
-        auEngine.startAndReturnError(nil);
+        do {
+            try auEngine.start()
+        } catch _ {
+        };
         
         auPlayerNode.play()
     }

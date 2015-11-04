@@ -60,19 +60,22 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
             isRecordingLabel.textColor =  recordingStatusLabelDfltColor
         }else{
             //set up for record
-            let docPath = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] as! String
+            let docPath = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] 
             let curDateTime = NSDate()
             let formatter = NSDateFormatter()
             formatter.dateFormat = "ddMMyyyy-HHmmss"
             let recordingName = formatter.stringFromDate(curDateTime) + ".wav"
             let pathArray = [docPath,recordingName]
             let filePath = NSURL.fileURLWithPathComponents(pathArray)
-            println(filePath)
+            print(filePath)
             
-            var session = AVAudioSession.sharedInstance()
-            session.setCategory(AVAudioSessionCategoryPlayAndRecord, error: nil)
+            let session = AVAudioSession.sharedInstance()
+            do {
+                try session.setCategory(AVAudioSessionCategoryPlayAndRecord)
+            } catch _ {
+            }
             
-            audioRecorder = AVAudioRecorder(URL: filePath, settings: nil, error: nil)
+            audioRecorder = try? AVAudioRecorder(URL: filePath!, settings: [String: AnyObject]())
             audioRecorder.delegate = self
             audioRecorder.meteringEnabled=true
         }
@@ -91,8 +94,11 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
         recordButton.enabled = true
         pauseButton.hidden = true
         audioRecorder.stop()
-        var audioSession = AVAudioSession.sharedInstance()
-        audioSession.setActive(false, error: nil)
+        let audioSession = AVAudioSession.sharedInstance()
+        do {
+            try audioSession.setActive(false)
+        } catch _ {
+        }
     }
     @IBAction func pauseRecording(sender: UIButton) {
         pauseMode=true
@@ -109,7 +115,7 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
             (recordButton.backgroundColor == recordBtnDfltBkgColor ? recordBtnBlinkBkgColor : recordBtnDfltBkgColor)
     }
     
-    func audioRecorderDidFinishRecording(recorder: AVAudioRecorder!, successfully flag: Bool) {
+    func audioRecorderDidFinishRecording(recorder: AVAudioRecorder, successfully flag: Bool) {
         if(flag){
             recordedAudio = RecordedAudio(audioUrl: recorder.url, audioTitle: recorder.url.lastPathComponent)
             //pass the info to the next VC..
